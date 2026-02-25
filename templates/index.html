@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMDB Quiz Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TMDB <span class="highlight">Quiz</span></h1>
+            <div class="score-board">
+                <span id="score">Puntos: 0</span>
+            </div>
+        </header>
+
+        <main id="game-area">
+            <div id="loading" class="hidden">Cargando pregunta...</div>
+            
+            <div id="question-container">
+                <div id="question-image-container"></div>
+                <h2 id="question-text">¿Listo para jugar?</h2>
+                <div id="options-container" class="options-grid">
+                    <!-- Options will be injected here -->
+                    <button id="start-btn" class="btn primary">Comenzar Juego</button>
+                </div>
+            </div>
+
+            <div id="result-message" class="hidden"></div>
+            <button id="next-btn" class="btn secondary hidden">Siguiente Pregunta</button>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
