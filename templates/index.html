@@ -30,6 +30,22 @@
 
             <div id="result-message" class="hidden"></div>
             <button id="next-btn" class="btn secondary hidden">Siguiente Pregunta</button>
+
+            <!-- Ranking Modal/Overlay -->
+            <div id="name-input-container" class="hidden">
+                <h3 class="highlight">¡Nuevo Récord!</h3>
+                <p>Estás en el Top 10 con <span id="final-score-value"></span> puntos.</p>
+                <input type="text" id="user-name" placeholder="Tu nombre..." maxlength="20" class="input-field">
+                <button id="submit-score-btn" class="btn primary">Guardar Puntuación</button>
+            </div>
+
+            <!-- Ranking Table Container -->
+            <div id="ranking-container" class="ranking-area">
+                <h3 class="highlight">Ranking Local</h3>
+                <div id="ranking-list">
+                    <p>Cargando ranking...</p>
+                </div>
+            </div>
         </main>
     </div>
 

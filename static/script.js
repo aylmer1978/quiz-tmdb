@@ -7,25 +7,62 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreDisplay = document.getElementById('score');
     const resultMessage = document.getElementById('result-message');
     const loading = document.getElementById('loading');
+    const rankingList = document.getElementById('ranking-list');
+    const nameInputContainer = document.getElementById('name-input-container');
+    const userNameInput = document.getElementById('user-name');
+    const submitScoreBtn = document.getElementById('submit-score-btn');
+    const finalScoreValue = document.getElementById('final-score-value');
 
     let score = 0;
     let mistakes = 0;
     const MAX_MISTAKES = 5;
     let currentQuestion = null;
+    let currentRanking = [];
+
+    // Initialize
+    loadRanking();
 
     startBtn.addEventListener('click', startGame);
     nextBtn.addEventListener('click', fetchQuestion);
+    submitScoreBtn.addEventListener('click', submitScore);
 
     function startGame() {
         score = 0;
         mistakes = 0;
         updateScore();
         startBtn.classList.add('hidden');
+        nameInputContainer.classList.add('hidden');
         fetchQuestion();
     }
 
     function updateScore() {
         scoreDisplay.textContent = `Puntos: ${score} | Errores: ${mistakes}/${MAX_MISTAKES}`;
+    }
+
+    async function loadRanking() {
+        try {
+            const response = await fetch('/api/ranking');
+            currentRanking = await response.json();
+            displayRanking(currentRanking);
+        } catch (error) {
+            console.error('Error loading ranking:', error);
+            rankingList.innerHTML = '<p>Error al cargar el ranking.</p>';
+        }
+    }
+
+    function displayRanking(ranking) {
+        if (!ranking || ranking.length === 0) {
+            rankingList.innerHTML = '<p>¡Sé el primero en aparecer aquí!</p>';
+            return;
+        }
+
+        rankingList.innerHTML = ranking.map((item, index) => `
+            <div class="ranking-item">
+                <span class="ranking-rank">#${index + 1}</span>
+                <span class="ranking-name">${item.name}</span>
+                <span class="ranking-score">${item.score} pts</span>
+            </div>
+        `).join('');
     }
 
     async function fetchQuestion() {
@@ -59,9 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function displayQuestion(data) {
         questionText.textContent = data.question;
 
-        // Handle image display for actor/director questions
         const imageContainer = document.getElementById('question-image-container');
-        imageContainer.innerHTML = ''; // Clear previous image
+        imageContainer.innerHTML = '';
 
         if (data.image_url) {
             const img = document.createElement('img');
@@ -80,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function selectOption(selectedBtn, selectedOption) {
-        // Disable all buttons
         const buttons = optionsContainer.querySelectorAll('.option-btn');
         buttons.forEach(btn => btn.disabled = true);
 
@@ -98,7 +133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resultMessage.textContent = `Incorrecto. La respuesta era: ${currentQuestion.answer}`;
             resultMessage.style.color = 'var(--error)';
 
-            // Highlight correct answer
             buttons.forEach(btn => {
                 if (btn.textContent === currentQuestion.answer) {
                     btn.classList.add('correct');
@@ -119,21 +153,53 @@ document.addEventListener('DOMContentLoaded', () => {
     function endGame() {
         resultMessage.textContent = `¡Juego Terminado! Puntuación final: ${score}`;
         resultMessage.classList.remove('hidden');
+        optionsContainer.innerHTML = '';
+        
+        // Check if score qualifies for Top 10
+        const qualifies = currentRanking.length < 10 || score > currentRanking[currentRanking.length - 1].score;
+        
+        if (qualifies && score > 0) {
+            finalScoreValue.textContent = score;
+            nameInputContainer.classList.remove('hidden');
+        } else {
+            showRestartButton();
+        }
+    }
 
-        // Create restart button
+    async function submitScore() {
+        const name = userNameInput.value.trim() || 'Anónimo';
+        submitScoreBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/ranking', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, score })
+            });
+            const newRanking = await response.json();
+            displayRanking(newRanking);
+            currentRanking = newRanking;
+            
+            nameInputContainer.classList.add('hidden');
+            userNameInput.value = '';
+            showRestartButton();
+        } catch (error) {
+            console.error('Error submitting score:', error);
+            alert('Error al guardar la puntuación.');
+            submitScoreBtn.disabled = false;
+        }
+    }
+
+    function showRestartButton() {
         const restartBtn = document.createElement('button');
         restartBtn.textContent = 'Jugar de Nuevo';
         restartBtn.classList.add('btn', 'primary');
         restartBtn.style.marginTop = '20px';
         restartBtn.addEventListener('click', () => {
-            optionsContainer.innerHTML = ''; // Clear options
+            optionsContainer.innerHTML = '';
             resultMessage.classList.add('hidden');
             startGame();
         });
-
-        // Append restart button to options container (clearing previous options first? No, maybe just append below)
-        // Actually, let's clear options to show the game over state cleanly
-        optionsContainer.innerHTML = '';
         optionsContainer.appendChild(restartBtn);
     }
 });
