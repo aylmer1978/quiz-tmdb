@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         optionsContainer.innerHTML = '';
         
         // Check if score qualifies for Top 10
-        const qualifies = currentRanking.length < 10 || score > currentRanking[currentRanking.length - 1].score;
+        const qualifies = currentRanking.length < 10 || score >= currentRanking[currentRanking.length - 1].score;
         
         if (qualifies && score > 0) {
             finalScoreValue.textContent = score;
